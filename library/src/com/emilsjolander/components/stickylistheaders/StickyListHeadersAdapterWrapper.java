@@ -42,6 +42,16 @@ final class StickyListHeadersAdapterWrapper extends BaseAdapter implements Stick
 			resetCache();
 		}
 	};
+	private OnClickListener headerClickListener = new OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			int position = (Integer) v.getTag();
+			if(onHeaderClickListener != null){
+				long headerId = getHeaderId(position);
+				onHeaderClickListener.onHeaderClick(v, position, headerId);
+			}
+		}
+	};
 	private OnHeaderClickListener onHeaderClickListener;
 
 	StickyListHeadersAdapterWrapper(Context context,
@@ -131,17 +141,9 @@ final class StickyListHeadersAdapterWrapper extends BaseAdapter implements Stick
 			throw new NullPointerException("Header view must not be null.");
 		}
 		//if the header isn't clickable, the listselector will be drawn on top of the header
+		header.setTag(position);
 		header.setClickable(true);
-		header.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				if(onHeaderClickListener != null){
-					long headerId = delegate.getHeaderId(position);
-					onHeaderClickListener.onHeaderClick(v, position, headerId);
-				}
-			}
-		});
+		header.setOnClickListener(headerClickListener);
 		return header;
 	}
 
