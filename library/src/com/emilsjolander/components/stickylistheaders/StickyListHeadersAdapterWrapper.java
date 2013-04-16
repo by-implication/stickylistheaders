@@ -32,7 +32,6 @@ final class StickyListHeadersAdapterWrapper extends BaseAdapter implements Stick
 	}
 
 	private long[] headerIdCache;
-	private final List<View> headerCache = new ArrayList<View>();
 	private final Context context;
 	private final StickyListHeadersAdapter delegate;
 	private Drawable divider;
@@ -41,11 +40,6 @@ final class StickyListHeadersAdapterWrapper extends BaseAdapter implements Stick
 		@Override
 		public void onChanged() {
 			resetCache();
-		}
-
-		@Override
-		public void onInvalidated() {
-			headerCache.clear();
 		}
 	};
 	private OnHeaderClickListener onHeaderClickListener;
@@ -127,16 +121,6 @@ final class StickyListHeadersAdapterWrapper extends BaseAdapter implements Stick
 	}
 
 	/**
-	 * Will recycle header from {@link WrapperView} if it exists
-	 */
-	private void recycleHeaderIfExists(WrapperView wv) {
-		View header = wv.header;
-		if (header != null) {
-			headerCache.add(header);
-		}
-	}
-
-	/**
 	 * Get a header view. This optionally pulls a header from the supplied
 	 * {@link WrapperView} and will also recycle the divider if it exists.
 	 */
@@ -172,9 +156,7 @@ final class StickyListHeadersAdapterWrapper extends BaseAdapter implements Stick
 		WrapperView wv = (convertView == null) ? new WrapperView(context) : (WrapperView) convertView;
 		View item = delegate.getView(position, wv.item, wv);
 		View header = null;
-		if (previousPositionHasSameHeader(position)) {
-			recycleHeaderIfExists(wv);
-		} else {
+		if (!previousPositionHasSameHeader(position)) {
 			header = configureHeader(wv, position);
 		}
 		if((item instanceof Checkable) && !(wv instanceof CheckableWrapperView)) {
