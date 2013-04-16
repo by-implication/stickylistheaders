@@ -1,6 +1,7 @@
 package com.emilsjolander.components.stickylistheaders;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import android.content.Context;
@@ -30,12 +31,17 @@ final class StickyListHeadersAdapterWrapper extends BaseAdapter implements Stick
 		public void onHeaderClick(View header, int itemPosition, long headerId);
 	}
 
+	private long[] headerIdCache;
 	private final List<View> headerCache = new ArrayList<View>();
 	private final Context context;
 	private final StickyListHeadersAdapter delegate;
 	private Drawable divider;
 	private int dividerHeight;
 	private DataSetObserver dataSetObserver = new DataSetObserver() {
+		@Override
+		public void onChanged() {
+			resetCache();
+		}
 
 		@Override
 		public void onInvalidated() {
@@ -49,6 +55,12 @@ final class StickyListHeadersAdapterWrapper extends BaseAdapter implements Stick
 		this.context = context;
 		this.delegate = delegate;
 		delegate.registerDataSetObserver(dataSetObserver);
+		resetCache();
+	}
+
+	void resetCache() {
+		headerIdCache = new long[getCount()];
+		Arrays.fill(headerIdCache, Long.MIN_VALUE);
 	}
 
 	void setDivider(Drawable divider) {
@@ -152,8 +164,7 @@ final class StickyListHeadersAdapterWrapper extends BaseAdapter implements Stick
 	/** Returns {@code true} if the previous position has the same header ID. */
 	private boolean previousPositionHasSameHeader(int position) {
 		return position != 0
-				&& delegate.getHeaderId(position) == delegate
-						.getHeaderId(position - 1);
+				&& getHeaderId(position) == getHeaderId(position - 1);
 	}
 
 	@Override
@@ -182,7 +193,7 @@ final class StickyListHeadersAdapterWrapper extends BaseAdapter implements Stick
 
 	@Override
 	public boolean equals(Object o) {
-		return delegate.equals(o); 
+		return delegate.equals(o);
 	}
 
 	@Override
@@ -217,7 +228,10 @@ final class StickyListHeadersAdapterWrapper extends BaseAdapter implements Stick
 
 	@Override
 	public long getHeaderId(int position) {
-		return delegate.getHeaderId(position);
+		if(headerIdCache[position] == Long.MIN_VALUE) {
+			headerIdCache[position] = delegate.getHeaderId(position);
+		}
+		return headerIdCache[position];
 	}
 
 }
